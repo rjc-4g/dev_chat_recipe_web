@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { ref, reactive } from 'vue';
+import { ref, reactive, onMounted } from 'vue';
 import axios from "axios";
 import { useGptStore } from "@/stores/gpt"
 import { ElLoading } from 'element-plus'
@@ -9,19 +9,25 @@ import { ElMessage } from 'element-plus'
 const data = reactive({
   responses: "",
   input: "",
+  programmingLanguageList: "",
+  platformList: "",
 });
 
 const { setGptResponse, getGptResponse } = useGptStore()
 
-const open = () => {
-  ElMessage({
-    message: 'this is a message.',
-    grouping: true,
-    type: 'success',
-  })
-}
+onMounted(() => {
+  axios
+    .get(import.meta.env.VITE_API_URL_BASE + import.meta.env.VITE_API_LANGUAGES)
+    .then(response => {
+      data.programmingLanguageList = response.data;
+    });
+  axios
+      .get(import.meta.env.VITE_API_URL_BASE + import.meta.env.VITE_API_PLATFORMS)
+      .then(response => {
+        data.platformList = response.data;
+      });
+})
 
-// 疎通確認用
 const url = import.meta.env.VITE_API_URL_BASE + import.meta.env.VITE_API_CHAT_GPT;
 const requestApi = async (formEl: FormInstance | undefined) => {
   if (!formEl) return
@@ -95,107 +101,6 @@ const resetForm = (formEl: FormInstance | undefined) => {
   data.responses = ""
 };
 
-const programmingLanguageList = [
-  {
-    "id": 1,
-    "dispName": "指定なし",
-    "prompt": "unspecified"
-  },
-  {
-    "id": 2,
-    "dispName": "Python",
-    "prompt": "Python"
-  },
-  {
-    "id": 3,
-    "dispName": "PHP",
-    "prompt": "PHP"
-  },
-  {
-    "id": 4,
-    "dispName": "Ruby",
-    "prompt": "Ruby"
-  },
-  {
-    "id": 5,
-    "dispName": "JavaScript",
-    "prompt": "JavaScript"
-  },
-  {
-    "id": 6,
-    "dispName": "TypeScript",
-    "prompt": "TypeScript"
-  },
-  {
-    "id": 7,
-    "dispName": "Java",
-    "prompt": "Java"
-  },
-  {
-    "id": 8,
-    "dispName": "Kotlin",
-    "prompt": "Kotlin"
-  },
-  {
-    "id": 9,
-    "dispName": "Scala",
-    "prompt": "Scala"
-  },
-  {
-    "id": 10,
-    "dispName": "C#",
-    "prompt": "C#"
-  },
-  {
-    "id": 11,
-    "dispName": "Go",
-    "prompt": "Go"
-  },
-  {
-    "id": 12,
-    "dispName": "Rust",
-    "prompt": "Rust"
-  },
-  {
-    "id": 13,
-    "dispName": "Swift",
-    "prompt": "Swift"
-  }
-];
-
-const platformList = [
-  {
-    "id": 1,
-    "dispname": "指定なし",
-    "prompt": "unspecified"
-  },
-  {
-    "id": 2,
-    "dispname": "WEBブラウザ",
-    "prompt": "WEB"
-  },
-  {
-    "id": 3,
-    "dispname": "スマートフォン",
-    "prompt": "Mobile Application"
-  },
-  {
-    "id": 4,
-    "dispname": "コンソール",
-    "prompt": "Console Application"
-  },
-  {
-    "id": 5,
-    "dispname": "デスクトップ",
-    "prompt": "Desktop Application"
-  },
-  {
-    "id": 6,
-    "dispname": "クロスプラットフォーム",
-    "prompt": "Cross Platform Application"
-  }
-];
-
 </script>
 
 <template>
@@ -212,13 +117,13 @@ const platformList = [
       </el-form-item>
       <el-form-item label="言語を入力" prop="programmingLanguage">
         <el-select v-model="ruleForm.programmingLanguage" value-key="id">
-          <el-option v-for="programmingLanguage in programmingLanguageList" :key="programmingLanguage.id"
+          <el-option v-for="programmingLanguage in data.programmingLanguageList" :key="programmingLanguage.id"
             :label="`${programmingLanguage.dispName}`" :value="programmingLanguage.id" />
         </el-select>
       </el-form-item>
       <el-form-item label="プラットフォームを入力" prop="platform">
         <el-select v-model="ruleForm.platform" value-key="id">
-          <el-option v-for="platform in platformList" :key="platform.id" :label="`${platform.dispname}`"
+          <el-option v-for="platform in data.platformList" :key="platform.id" :label="`${platform.dispname}`"
             :value="platform.id" />
         </el-select>
       </el-form-item>
