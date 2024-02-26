@@ -4,3 +4,5 @@ django-filter
 django-cors-headers
 googletrans==4.0.0-rc1
 openai
+pytest
+pytest-django

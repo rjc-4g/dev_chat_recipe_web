@@ -2,7 +2,6 @@
 from logging.handlers import TimedRotatingFileHandler
 from django.conf import settings
 from googletrans import Translator
-import os
 import openai
 import json
 import logging
@@ -52,20 +51,25 @@ def createPrompt(request):
 
     # JSONファイルの読み込み及び取得
     # 言語
-    programming_language_open = open('./json/programmingLanguage.json', 'r')
-    programming_language_json = json.load(programming_language_open)
+    with open('./json/programmingLanguage.json', 'r', encoding='utf-8') as programming_language_open:
+        programming_language_json = json.load(programming_language_open)
     programming_language = getPrompt(programming_language_json, "lang", int(prompt["programmingLanguage"]))
+    if programming_language == "":
+        return "存在しない言語です。入力内容を確認してください。"
+
     # プラットフォーム
-    platform_open = open('./json/platform.json', 'r')
-    platform_json = json.load(platform_open)
+    with open('./json/platform.json', 'r', encoding='utf-8') as platform_open:
+        platform_json = json.load(platform_open)
     platform = getPrompt(platform_json, "platform", int(prompt["platform"]))
+    if platform == "":
+        return "存在しないプラットフォームです。入力内容を確認してください。"
     
     # system_prompt
-    system_prompt1 = " 「作りたいアプリの概要：」で指定されたアプリを「プラットフォーム：」と「プログラム言語：」に指定された条件で構築する際、お勧めのフレームワーク名を最大３つまで提案してください。\n"
+    system_prompt1 = " 「作りたいアプリの概要：」で指定された内容を「プラットフォーム：」と「プログラム言語：」に指定された条件で構築する際、お勧めのフレームワーク名を最大３つまで提案してください。\n"
     system_prompt2 = "また、提案された各フレームワークの「開発環境」を簡潔に教えてください。\n"
-    system_prompt3 = "「DB使用有無：」が「有り」となっていた場合、「DB使用」を考慮したライブラリを、「クラウド使用有無：」が「有り」となっていた場合は「クラウド使用」を考慮したライブラリを紹介してください。\n"
-    system_prompt_template = "回答は＜テンプレート＞の内容に沿って返却してください。\n ＜テンプレート＞ \n フレームワーク名： \n  開発環境： \n"
-    system_prompt_ehd = "それ以外の回答はしないでください。\n 「作りたいアプリの概要：」で回答できない質問を指定された場合は、「アプリが不明です。」と返答してください。 \n 「プログラム言語：」に存在しない言語を質問されたら「存在しない言語です。入力内容を確認してください。」と回答してください。\n"
+    system_prompt3 = "「DB使用有無：」が「有り」の場合、「DB使用」を考慮したライブラリを、「クラウド使用有無：」が「有り」となっていの場合は「クラウド使用」を考慮したライブラリを紹介してください。\n"
+    system_prompt_template = "回答は＜テンプレート＞の内容に沿って返却してください。\n ＜テンプレート＞ \n フレームワーク名： \n  開発環境： \n  ライブラリ： \n"
+    system_prompt_ehd = "それ以外の回答はしないでください。\n 「作りたいアプリの概要：」で回答できない質問を指定された場合は、「アプリが不明です。」と返答してください。"
     system_prompt = system_prompt1 + system_prompt2 + system_prompt3 + system_prompt_template + system_prompt_ehd
     logger.debug("system_prompt:\n" + system_prompt)
     # user_prompt
