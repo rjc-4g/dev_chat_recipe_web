@@ -127,13 +127,13 @@ def getPrompt(json, element_str, id):
 def get_programming_language():
     # 言語
     programming_language_open = open('./json/programmingLanguage.json', 'r')
-    programming_language_json = json.load(programming_language_open)["lang"]
-    return str(programming_language_json)
+    return json.load(programming_language_open)["lang"]
+
 
 
 # プラットフォーム取得
 def get_platform():
     # プラットフォーム
     platform_open = open('./json/platform.json', 'r')
-    platform_json = json.load(platform_open)["platform"]
-    return str(platform_json)
+    return json.load(platform_open)["platform"]
+    
