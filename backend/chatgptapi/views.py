@@ -2,7 +2,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 
 from rest_framework import status
-from .services.chatgpt import createPrompt
+from .services.chatgpt import createPrompt, get_programming_language, get_platform
 
 import json
 
@@ -33,11 +33,9 @@ class RequestChatGPTView(APIView):
 class RequestChatGPTSelectionLang(APIView):
     def get(self, request, format=None):
         try:
-            # 言語
-            programming_language_open = open('./json/programmingLanguage.json', 'r')
-            programming_language_json = json.load(programming_language_open)["lang"]
+            # 言語取得
             return Response(
-                str(programming_language_json), status=status.HTTP_200_OK
+                get_programming_language(), status=status.HTTP_200_OK
             )
         except Exception as e:
             # エラーが発生した場合
@@ -47,11 +45,9 @@ class RequestChatGPTSelectionLang(APIView):
 class RequestChatGPTSelectionPlatform(APIView):
     def get(self, request, format=None):
         try:
-            # プラットフォーム
-            platform_open = open('./json/platform.json', 'r')
-            platform_json = json.load(platform_open)["platform"]
+            # プラットフォーム取得
             return Response(
-                str(platform_json), status=status.HTTP_200_OK
+                get_platform(), status=status.HTTP_200_OK
             )
         except Exception as e:
             # エラーが発生した場合
